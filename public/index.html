@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Хищник Бургерс</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/style.css">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#ff9800">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Хищник Бургерс">
+</head>
+
+<body>
+
+    <!-- ВХОД -->
+    <div id="loginForm" class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <img src="/logo.png" alt="ХИЩНИК БУРГЕРС"
+                    onerror="this.src='https://placehold.co/250x80/ff9800/white?text=ХИЩНИК+БУРГЕРС'">
+                <p>Корпоративная система</p>
+            </div>
+            <div class="login-body">
+                <input type="text" id="username" placeholder="Email или логин">
+                <input type="password" id="password" placeholder="Пароль">
+                <button onclick="doLogin()">Войти</button>
+                <div class="info-text">
+                    admin / admin123 | manager1 / manager123<br>
+                    accountant1 / acc123 | employee1 / emp123
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ОСНОВНОЙ ИНТЕРФЕЙС -->
+    <div id="mainApp" style="display:none">
+        <nav class="navbar">
+            <div class="container-fluid d-flex justify-content-between">
+                <a class="navbar-brand" href="#">
+                    <img src="/logo.png" alt="ХИЩНИК"
+                        onerror="this.src='https://placehold.co/120x40/ff9800/white?text=ХИЩНИК'">
+                    ХИЩНИК БУРГЕРС
+                </a>
+                <div class="nav-actions">
+                    <span id="userName"></span>
+                    <i class="fas fa-sign-out-alt" style="cursor:pointer" onclick="doLogout()" title="Выйти"></i>
+                    <i class="fas fa-bars d-md-none" style="cursor:pointer" onclick="toggleSidebar()" title="Меню"></i>
+                </div>
+            </div>
+        </nav>
+
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-item active" onclick="showSection('home')">
+                <i class="fas fa-home"></i> Главная
+            </div>
+            <div class="sidebar-item" onclick="showSection('shifts')">
+                <i class="fas fa-clock"></i> Смены
+            </div>
+            <div class="sidebar-item" onclick="showSection('chats')">
+                <i class="fas fa-comments"></i> Чаты
+                <span id="chatUnreadBadge" class="badge-unread" style="display:none">0</span>
+            </div>
+            <div class="sidebar-item" onclick="showSection('whosworking')">
+                <i class="fas fa-users"></i> Кто на смене
+            </div>
+            <div class="sidebar-item" onclick="showSection('timesheet')">
+                <i class="fas fa-calendar-alt"></i> Табель
+            </div>
+            <div class="sidebar-item" onclick="showSection('stats')">
+                <i class="fas fa-chart-line"></i> Статистика
+            </div>
+            <div class="sidebar-item" onclick="showSection('schedule')">
+                <i class="fas fa-calendar"></i> Календарь
+            </div>
+            <div class="sidebar-item" onclick="showSection('map')">
+                <i class="fas fa-map-marker-alt"></i> Рестораны
+            </div>
+            <div class="sidebar-item" id="manageMenuItem" onclick="showSection('manage')">
+                <i class="fas fa-cog"></i> Управление
+            </div>
+            <hr>
+            <div class="sidebar-item" onclick="showSection('profile')">
+                <i class="fas fa-user"></i> Профиль
+            </div>
+        </div>
+
+        <div class="main-content">
+
+            <!-- ==================== ГЛАВНАЯ СТРАНИЦА ==================== -->
+            <div id="homeSection" class="section">
+                <div class="home-container">
+                    <div class="home-buttons">
+                        <button class="home-btn-start" onclick="clockIn()">
+                            <i class="fas fa-play"></i> Начать смену
+                        </button>
+                        <button class="home-btn-overtime" onclick="showOvertimeModal()">
+                            <i class="fas fa-plus-circle"></i> Переработка
+                        </button>
+                    </div>
+                    <div id="homeShiftStatus" class="home-shift-status"></div>
+                </div>
+            </div>
+
+            <!-- ==================== СМЕНЫ ==================== -->
+            <div id="shiftsSection" class="section" style="display:none">
+                <div class="card">
+                    <div class="card-header">⏰ Учет рабочего времени</div>
+                    <div class="card-body">
+                        <div class="shift-buttons">
+                            <button class="btn-start" onclick="clockIn()"><i class="fas fa-play"></i> Начать
+                                смену</button>
+                            <button class="btn-overtime" onclick="showOvertimeModal()"><i
+                                    class="fas fa-plus-circle"></i> Переработка</button>
+                        </div>
+                        <div id="shiftStatus" class="shift-status"></div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">📋 История смен</div>
+                    <div class="card-body" id="shiftHistory"></div>
+                </div>
+            </div>
+
+            <!-- ==================== ЧАТЫ ==================== -->
+            <div id="chatsSection" class="section" style="display:none">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header">💬 Группы</div>
+                            <div class="card-body">
+                                <div class="folder-grid" id="foldersList">Загрузка...</div>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-header">🔍 Поиск</div>
+                            <div class="card-body">
+                                <input type="text" id="searchInput" class="form-control"
+                                    placeholder="Поиск сообщений...">
+                                <button onclick="searchInChat()" class="mt-2 w-100">🔎 Найти</button>
+                                <div id="searchResults" class="search-results mt-2"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-header" id="chatTitle">💬 Выберите чат</div>
+                            <div class="card-body chat-container">
+                                <div id="typingIndicator" class="typing-indicator"></div>
+                                <div id="chatMessages" class="chat-messages"></div>
+                                <div class="chat-input-area">
+                                    <textarea id="messageInput" rows="2"
+                                        placeholder="Введите сообщение... (Enter - отправить)"></textarea>
+                                    <div class="chat-buttons">
+                                        <button class="icon-btn" onclick="toggleEmoji()" title="Смайлики">😊</button>
+                                        <button class="icon-btn" onclick="openCamera()" title="Сделать фото">📸</button>
+                                        <button class="icon-btn" onclick="startRecording()" id="recordBtn"
+                                            title="Голосовое">🎤</button>
+                                        <span id="recordingTimer" class="recording-timer"></span>
+                                        <button class="icon-btn" onclick="cancelReply()"
+                                            title="Отменить ответ">↩️</button>
+                                        <button class="btn-send" onclick="sendMessage()">📤 Отправить</button>
+                                    </div>
+                                    <div id="replyBar" class="reply-bar" style="display:none">
+                                        <span>Ответ на: <span id="replyingToText"></span></span>
+                                        <button class="icon-btn" onclick="cancelReply()">✖️</button>
+                                    </div>
+                                </div>
+                                <div id="emojiPicker" class="emoji-picker">
+                                    <span class="emoji" onclick="addEmoji('😀')">😀</span>
+                                    <span class="emoji" onclick="addEmoji('🍔')">🍔</span>
+                                    <span class="emoji" onclick="addEmoji('🍟')">🍟</span>
+                                    <span class="emoji" onclick="addEmoji('🔥')">🔥</span>
+                                    <span class="emoji" onclick="addEmoji('🦁')">🦁</span>
+                                    <span class="emoji" onclick="addEmoji('👍')">👍</span>
+                                    <span class="emoji" onclick="addEmoji('❤️')">❤️</span>
+                                    <span class="emoji" onclick="addEmoji('😂')">😂</span>
+                                    <span class="emoji" onclick="addEmoji('😎')">😎</span>
+                                    <span class="emoji" onclick="addEmoji('🎉')">🎉</span>
+                                    <span class="emoji" onclick="addEmoji('🪓')">🪓</span>
+                                </div>
+                                <input type="file" id="cameraInput" accept="image/*" style="display:none"
+                                    onchange="sendPhoto(this)">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== КТО НА СМЕНЕ ==================== -->
+            <div id="whosworkingSection" class="section" style="display:none">
+                <div class="card">
+                    <div class="card-header">👥 Кто сейчас на смене</div>
+                    <div class="card-body" id="whoIsWorkingList"></div>
+                </div>
+            </div>
+
+            <!-- ==================== ТАБЕЛЬ ==================== -->
+            <div id="timesheetSection" class="section" style="display:none">
+                <div class="card">
+                    <div class="card-header">📅 Табель учета рабочего времени</div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <label>Дата начала</label>
+                                <input type="date" id="tsStart" class="form-control">
+                            </div>
+                            <div class="col-md-4">
+                                <label>Дата окончания</label>
+                                <input type="date" id="tsEnd" class="form-control">
+                            </div>
+                            <div class="col-md-4">
+                                <label>&nbsp;</label>
+                                <div>
+                                    <button onclick="loadTimesheet()" class="btn-export">📊 Показать</button>
+                                    <button onclick="exportReportCSV()" class="btn-export">📥 CSV</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="timesheetTable" class="mt-3 table-responsive"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== СТАТИСТИКА ==================== -->
+            <div id="statsSection" class="section" style="display:none">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">📊 Сегодня</div>
+                            <div class="card-body" id="statsToday"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">👥 Активность</div>
+                            <div class="card-body" id="statsActivity"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">📈 График смен</div>
+                    <div class="card-body">
+                        <canvas id="weeklyChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== КАЛЕНДАРЬ ==================== -->
+            <div id="scheduleSection" class="section" style="display:none">
+                <div class="card">
+                    <div class="card-header">📅 Календарь смен</div>
+                    <div class="card-body">
+                        <input type="month" id="scheduleMonth" class="form-control d-inline-block" style="width:200px">
+                        <button onclick="loadSchedule()" class="mt-2">Показать</button>
+                        <div id="scheduleGrid" class="mt-3 table-responsive"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== КАРТА РЕСТОРАНОВ ==================== -->
+            <div id="mapSection" class="section" style="display:none">
+                <div class="card">
+                    <div class="card-header">📍 Наши рестораны</div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <div class="worker-card">
+                                    <div style="font-size:32px;">🍔</div>
+                                    <div><strong>Кузнецкий мост</strong><br><small>Кузнецкий мост, 18/7</small></div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="worker-card">
+                                    <div style="font-size:32px;">🍔</div>
+                                    <div><strong>Большая Дмитровка</strong><br><small>Большая Дмитровка, 5/6 стр
+                                            4</small></div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="worker-card">
+                                    <div style="font-size:32px;">🍔</div>
+                                    <div><strong>Павелецкая</strong><br><small>Павелецкая площадь, 2 стр 2</small></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="map-container">
+                            <iframe
+                                src="https://yandex.ru/map-widget/v1/?ll=37.617500,55.755800&z=13&pt=37.618333,55.760278,pm2rdm~37.600278,55.764722,pm2rdm~37.635278,55.730278,pm2rdm"
+                                allowfullscreen></iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== УПРАВЛЕНИЕ ==================== -->
+            <div id="manageSection" class="section" style="display:none">
+                <div class="card">
+                    <div class="card-header">➕ Создать новую группу</div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4"><input type="text" id="newFolderName" class="form-control"
+                                    placeholder="Название"></div>
+                            <div class="col-md-4"><input type="text" id="newFolderDesc" class="form-control"
+                                    placeholder="Описание"></div>
+                            <div class="col-md-3">
+                                <select id="newFolderRoles" class="form-control">
+                                    <option value="employee,manager,accountant,admin">Все сотрудники</option>
+                                    <option value="manager,accountant,admin">Руководство + Бухгалтер</option>
+                                    <option value="manager,admin">Только руководство</option>
+                                </select>
+                            </div>
+                            <div class="col-md-1"><button onclick="createNewFolder()"
+                                    class="btn-export w-100">➕</button></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">📧 Добавить сотрудника</div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4"><input type="email" id="newUserEmail" class="form-control"
+                                    placeholder="Email"></div>
+                            <div class="col-md-4"><input type="text" id="newUserFullName" class="form-control"
+                                    placeholder="ФИО"></div>
+                            <div class="col-md-3">
+                                <select id="newUserRole" class="form-control">
+                                    <option value="employee">Сотрудник</option>
+                                    <option value="manager">Менеджер</option>
+                                    <option value="accountant">Бухгалтер</option>
+                                </select>
+                            </div>
+                            <div class="col-md-1"><button onclick="addUser()" class="btn-export w-100">📧</button></div>
+                        </div>
+                        <div class="alert alert-info mt-3 small">Сотруднику на почту придет одноразовый пароль. После
+                            первого входа нужно будет сменить пароль.</div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">👥 Сотрудники</div>
+                    <div class="card-body" id="usersList"></div>
+                </div>
+                <div class="card">
+                    <div class="card-header">👥 Добавить сотрудника в чат</div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6"><select id="addToFolderSelect" class="form-control"></select></div>
+                            <div class="col-md-5"><select id="addUserToFolderSelect" class="form-control"></select>
+                            </div>
+                            <div class="col-md-1"><button onclick="addUserToFolder()"
+                                    class="btn-export w-100">➕</button></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== ПРОФИЛЬ ==================== -->
+            <div id="profileSection" class="section" style="display:none">
+                <div class="card">
+                    <div class="card-header">👤 Мой профиль</div>
+                    <div class="card-body">
+                        <div class="avatar-upload">
+                            <div class="avatar-preview" id="profileAvatar">👤</div>
+                            <button onclick="uploadAvatar()" class="avatar-upload-btn">📸 Загрузить аватар</button>
+                        </div>
+                        <p><strong>Логин:</strong> <span id="profileUsername"></span></p>
+                        <p><strong>Email:</strong> <span id="profileEmail"></span></p>
+                        <p><strong>ФИО:</strong> <span id="profileFullName"></span></p>
+                        <p><strong>Роль:</strong> <span id="profileRole"></span></p>
+                        <hr>
+                        <button onclick="changePassword()">🔑 Сменить пароль</button>
+                    </div>
+                </div>
+            </div>
+
+            <footer>🦁 ХИЩНИК БУРГЕРС | Корпоративная система | © 2026</footer>
+        </div>
+    </div>
+
+    <!-- Модальное окно для просмотра фото -->
+    <div id="imageModal" class="image-modal" onclick="closeImageModal()">
+        <span class="image-modal-close" onclick="closeImageModal()">&times;</span>
+        <img id="modalImage" src="">
+    </div>
+
+    <!-- Модальное окно переработки -->
+    <div id="overtimeModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeOvertimeModal()">&times;</span>
+            <h3>🕐 Запрос на переработку</h3>
+            <div class="mt-2">
+                <label>Количество часов:</label>
+                <input type="number" id="overtimeHours" class="form-control" step="0.5" min="0.5" max="12"
+                    placeholder="Например: 2.5">
+            </div>
+            <div class="mt-2">
+                <label>Дата:</label>
+                <input type="date" id="overtimeDate" class="form-control">
+            </div>
+            <div class="mt-2">
+                <label>Причина:</label>
+                <textarea id="overtimeReason" class="form-control" rows="2"
+                    placeholder="Укажите причину переработки"></textarea>
+            </div>
+            <button onclick="submitOvertime()" class="mt-3">📤 Отправить запрос</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="/app.js"></script>
+</body>
+
+</html>
